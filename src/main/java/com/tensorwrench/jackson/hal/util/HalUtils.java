@@ -1,31 +1,23 @@
 package com.tensorwrench.jackson.hal.util;
 
-import java.lang.annotation.Annotation;
-import java.lang.reflect.Constructor;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Modifier;
-import java.util.ArrayDeque;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Deque;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Queue;
-import java.util.Set;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-
 import com.fasterxml.jackson.databind.BeanDescription;
 import com.fasterxml.jackson.databind.JavaType;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.deser.SettableBeanProperty;
 import com.fasterxml.jackson.databind.introspect.BeanPropertyDefinition;
 import com.fasterxml.jackson.databind.ser.BeanPropertyWriter;
+import com.tensorwrench.jackson.hal.annotations.HalEmbedded;
 import com.tensorwrench.jackson.hal.annotations.HalId;
 import com.tensorwrench.jackson.hal.annotations.HalLink;
 import com.tensorwrench.jackson.hal.annotations.HalResource;
+
+import java.lang.annotation.Annotation;
+import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Modifier;
+import java.util.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class HalUtils {
 	public static <T extends Annotation> T findAnnotation(final Class<?> myClass, final Class<T> annotationClass) {
@@ -46,10 +38,19 @@ public class HalUtils {
 			try {
 				return c.getConstructor().newInstance();
 
-			} catch (NoSuchMethodException | SecurityException | InstantiationException | IllegalAccessException | IllegalArgumentException
-					| InvocationTargetException e) {
+			} catch (NoSuchMethodException e){
 				// no visible default constructor, so just fall through and best guess
-			}
+			} catch (SecurityException e){
+				// no visible default constructor, so just fall through and best guess
+			} catch (InstantiationException e){
+				// no visible default constructor, so just fall through and best guess
+			} catch (IllegalAccessException e){
+				// no visible default constructor, so just fall through and best guess
+			} catch (IllegalArgumentException e){
+				// no visible default constructor, so just fall through and best guess
+			} catch (InvocationTargetException e){
+				// no visible default constructor, so just fall through and best guess
+			}			
 		}
 		return null;
 	}
@@ -69,20 +70,20 @@ public class HalUtils {
 
 		// now we guess...
 		if (Set.class.isAssignableFrom(c)) {
-			return new HashSet<>();
+			return new HashSet<Object>();
 		}
 		if (List.class.isAssignableFrom(c)) {
-			return new ArrayList<>();
+			return new ArrayList<Object>();
 		}
 		if (Deque.class.isAssignableFrom(c)) {
-			return new ArrayDeque<>();
+			return new ArrayDeque<Object>();
 		}
 		if (Queue.class.isAssignableFrom(c)) {
-			return new ArrayDeque<>();
+			return new ArrayDeque<Object>();
 		}
 		if (Collection.class.isAssignableFrom(c)) {
 			// uhh... ArrayList?
-			return new ArrayList<>();
+			return new ArrayList<Object>();
 		}
 		return null;
 	}
@@ -90,7 +91,7 @@ public class HalUtils {
 	public static BeanPropertyDefinition findIdProperty(final BeanDescription bean) {
 		for(final BeanPropertyDefinition p:bean.findProperties())
 		{
-			if(p.getField().hasAnnotation(HalId.class)) {
+			if(p.getField() != null && p.getField().hasAnnotation(HalId.class)) {
 				return p;
 			}
 		}
@@ -127,8 +128,15 @@ public class HalUtils {
 	public static boolean isHalLink(final BeanPropertyWriter p) {
 		return p.getAnnotation(HalLink.class)!=null;
 	}
-	
-	private final static Map<Class<?>,Class<?>> primitiveToBoxedClass = new HashMap<> ();
+
+	public static boolean isHalEmbedded(final BeanPropertyWriter p) {
+		return p.getAnnotation(HalEmbedded.class)!=null;
+	}
+
+	public static boolean isHalEmbedded(final SettableBeanProperty p) {
+		return p.getAnnotation(HalEmbedded.class)!=null;
+	}
+	private final static Map<Class<?>,Class<?>> primitiveToBoxedClass = new HashMap<Class<?>,Class<?>> ();
 	static {
 		primitiveToBoxedClass.put(boolean.class,Boolean.class);
 		primitiveToBoxedClass.put(byte.class, Byte.class);
@@ -149,7 +157,17 @@ public class HalUtils {
 			
 			Constructor<?> constructor = c.getConstructor(String.class);
 			return constructor.newInstance(value);
-		} catch (NoSuchMethodException | SecurityException | InstantiationException | IllegalAccessException | IllegalArgumentException | InvocationTargetException e) {
+		} catch (NoSuchMethodException e){
+			throw new JsonMappingException("Failed to convert id of "+value+" to " +p,e);
+		} catch (SecurityException e){
+			throw new JsonMappingException("Failed to convert id of "+value+" to " +p,e);
+		} catch (InstantiationException e){
+			throw new JsonMappingException("Failed to convert id of "+value+" to " +p,e);
+		} catch (IllegalAccessException e){
+			throw new JsonMappingException("Failed to convert id of "+value+" to " +p,e);
+		} catch (IllegalArgumentException e){
+			throw new JsonMappingException("Failed to convert id of "+value+" to " +p,e);
+		} catch (InvocationTargetException e){
 			throw new JsonMappingException("Failed to convert id of "+value+" to " +p,e);
 		}
 	}

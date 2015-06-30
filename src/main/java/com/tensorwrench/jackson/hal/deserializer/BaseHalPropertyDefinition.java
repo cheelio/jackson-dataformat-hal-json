@@ -1,11 +1,5 @@
 package com.tensorwrench.jackson.hal.deserializer;
 
-import java.io.IOException;
-import java.lang.annotation.Annotation;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
-
 import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -18,8 +12,14 @@ import com.fasterxml.jackson.databind.introspect.AnnotationMap;
 import com.fasterxml.jackson.databind.type.TypeFactory;
 import com.tensorwrench.jackson.hal.util.HalUtils;
 
+import java.io.IOException;
+import java.lang.annotation.Annotation;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.Map;
+
 public abstract class BaseHalPropertyDefinition extends SettableBeanProperty {
-	private final Map<String,SettableBeanProperty> properties=new HashMap<>();
+	private final Map<String,SettableBeanProperty> properties=new HashMap<String,SettableBeanProperty>();
 	protected SettableBeanProperty selfProperty;
 
 	protected BaseHalPropertyDefinition(String propName) {
@@ -34,11 +34,8 @@ public abstract class BaseHalPropertyDefinition extends SettableBeanProperty {
 		selfProperty=p;
 	}
 
-	//	@SuppressWarnings("unchecked")
 	@Override
 	public SettableBeanProperty withValueDeserializer(JsonDeserializer<?> deser) {
-		//		BaseHalPropertyDefinition p=this.copy();
-		//		p._valueDeserializer=(JsonDeserializer<Object>) deser;
 		return this; // does nothing
 	}
 

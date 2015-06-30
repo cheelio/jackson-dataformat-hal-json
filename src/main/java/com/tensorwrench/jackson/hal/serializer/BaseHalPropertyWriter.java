@@ -16,7 +16,7 @@ class EmptyClass {
 
 
 public abstract class BaseHalPropertyWriter extends BeanPropertyWriter{
-	protected final List<BeanPropertyWriter> properties=new ArrayList<>();
+	protected final List<BeanPropertyWriter> properties=new ArrayList<BeanPropertyWriter>();
 	
 	public BaseHalPropertyWriter(String name) {
 		super(
@@ -34,7 +34,10 @@ public abstract class BaseHalPropertyWriter extends BeanPropertyWriter{
 	private static AnnotatedMember createAnnotatedMethod() {
 		try {
 			return new AnnotatedMethod(BaseHalPropertyWriter.class.getMethod("dummyMethod"),	new AnnotationMap(), new AnnotationMap[0]);
-		} catch (NoSuchMethodException | SecurityException e) {
+		} catch (NoSuchMethodException e){
+			// shouldn't happen... so don't worry about it too much
+			return null;
+		} catch (SecurityException e) {
 			// shouldn't happen... so don't worry about it too much
 			return null;
 		}

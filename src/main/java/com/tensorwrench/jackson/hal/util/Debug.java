@@ -14,7 +14,16 @@ public class Debug {
 			buffer=writer.getClass().getDeclaredField("_buffer");
 			buffer.setAccessible(true);
 			System.err.println("Current jgen: " + buffer.get(writer));
-		} catch (NoSuchFieldException | SecurityException | IllegalArgumentException | IllegalAccessException e) {
+		} catch (NoSuchFieldException e){
+			// debugging tools, don't care much if we can't print it
+			e.printStackTrace();
+		} catch (SecurityException e){
+			// debugging tools, don't care much if we can't print it
+			e.printStackTrace();
+		} catch (IllegalArgumentException e){
+			// debugging tools, don't care much if we can't print it
+			e.printStackTrace();
+		} catch (IllegalAccessException e){
 			// debugging tools, don't care much if we can't print it
 			e.printStackTrace();
 		} 

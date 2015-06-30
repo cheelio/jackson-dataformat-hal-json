@@ -1,10 +1,6 @@
 package com.tensorwrench.jackson.hal.deserializer;
 
 
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
-
 import com.fasterxml.jackson.databind.BeanDescription;
 import com.fasterxml.jackson.databind.DeserializationConfig;
 import com.fasterxml.jackson.databind.deser.BeanDeserializerBuilder;
@@ -12,6 +8,10 @@ import com.fasterxml.jackson.databind.deser.SettableBeanProperty;
 import com.tensorwrench.jackson.hal.HalLinkResolver;
 import com.tensorwrench.jackson.hal.annotations.HalId;
 import com.tensorwrench.jackson.hal.util.HalUtils;
+
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
 
 public class HalDeserializerModifier extends com.fasterxml.jackson.databind.deser.BeanDeserializerModifier {
 	HalLinkResolver linkResolver;
@@ -23,7 +23,7 @@ public class HalDeserializerModifier extends com.fasterxml.jackson.databind.dese
 	public BeanDeserializerBuilder updateBuilder(final DeserializationConfig config, final BeanDescription beanDesc, final BeanDeserializerBuilder builder)  {
 		final LinkPropertyDefinition links=new LinkPropertyDefinition(linkResolver);
 		final EmbeddedPropertyDefinition embedded=new EmbeddedPropertyDefinition();
-		final List<SettableBeanProperty> remove=new ArrayList<>();
+		final List<SettableBeanProperty> remove=new ArrayList<SettableBeanProperty>();
 
 		// pull out all of the HAL _embedded or _links elements
 		final Iterator<SettableBeanProperty> prop=builder.getProperties();
@@ -34,6 +34,9 @@ public class HalDeserializerModifier extends com.fasterxml.jackson.databind.dese
 			} else if(HalUtils.isHalResource(p.getType())) {
 				embedded.addProp(p);
 				links.addProp(p);
+				remove.add(p);
+			}else if (HalUtils.isHalEmbedded(p)){
+				embedded.addProp(p);
 				remove.add(p);
 			}
 		}

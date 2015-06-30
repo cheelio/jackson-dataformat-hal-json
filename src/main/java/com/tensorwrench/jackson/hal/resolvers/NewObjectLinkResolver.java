@@ -14,7 +14,7 @@ import com.tensorwrench.jackson.hal.HalLinkResolver;
 import com.tensorwrench.jackson.hal.util.HalUtils;
 
 public class NewObjectLinkResolver implements HalLinkResolver{
-	Map<Class<?>, ObjectMakerImpl> cache=new HashMap<>();
+	Map<Class<?>, ObjectMakerImpl> cache=new HashMap<Class<?>, ObjectMakerImpl>();
 	
 	static class ObjectMakerImpl {
 		private final BeanDescription beanDescription;
