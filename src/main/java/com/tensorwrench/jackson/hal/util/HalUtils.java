@@ -6,10 +6,7 @@ import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.deser.SettableBeanProperty;
 import com.fasterxml.jackson.databind.introspect.BeanPropertyDefinition;
 import com.fasterxml.jackson.databind.ser.BeanPropertyWriter;
-import com.tensorwrench.jackson.hal.annotations.HalEmbedded;
-import com.tensorwrench.jackson.hal.annotations.HalId;
-import com.tensorwrench.jackson.hal.annotations.HalLink;
-import com.tensorwrench.jackson.hal.annotations.HalResource;
+import com.tensorwrench.jackson.hal.annotations.*;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Constructor;
@@ -38,19 +35,19 @@ public class HalUtils {
 			try {
 				return c.getConstructor().newInstance();
 
-			} catch (NoSuchMethodException e){
+			} catch (NoSuchMethodException e) {
 				// no visible default constructor, so just fall through and best guess
-			} catch (SecurityException e){
+			} catch (SecurityException e) {
 				// no visible default constructor, so just fall through and best guess
-			} catch (InstantiationException e){
+			} catch (InstantiationException e) {
 				// no visible default constructor, so just fall through and best guess
-			} catch (IllegalAccessException e){
+			} catch (IllegalAccessException e) {
 				// no visible default constructor, so just fall through and best guess
-			} catch (IllegalArgumentException e){
+			} catch (IllegalArgumentException e) {
 				// no visible default constructor, so just fall through and best guess
-			} catch (InvocationTargetException e){
+			} catch (InvocationTargetException e) {
 				// no visible default constructor, so just fall through and best guess
-			}			
+			}
 		}
 		return null;
 	}
@@ -89,56 +86,66 @@ public class HalUtils {
 	}
 
 	public static BeanPropertyDefinition findIdProperty(final BeanDescription bean) {
-		for(final BeanPropertyDefinition p:bean.findProperties())
-		{
-			if(p.getField() != null && p.getField().hasAnnotation(HalId.class)) {
+		for (final BeanPropertyDefinition p : bean.findProperties()) {
+			if (p.getField() != null && p.getField().hasAnnotation(HalId.class)) {
 				return p;
 			}
 		}
 		return null;
 	}
 
+	public static BeanPropertyDefinition findLinkPrefixProperty(final BeanDescription bean) {
+
+		for (final BeanPropertyDefinition p : bean.findProperties()) {
+			if (p.getField() != null && p.getField().hasAnnotation(HalLinkPrefix.class)) {
+				return p;
+			}
+		}
+		return null;
+	}
 	public static String findFormat(final BeanDescription bean) {
-		final HalResource r=HalUtils.findAnnotation(bean.getBeanClass(),HalResource.class);
-		if(r!=null) {
+		final HalResource r = HalUtils.findAnnotation(bean.getBeanClass(), HalResource.class);
+		if (r != null) {
 			return r.urlFormat();
-		} 
+		}
 		return HalResource.DEFAULT_URL_FORMAT;
 	}
 
 	public static String findIdParser(final BeanDescription bean) {
-		final HalResource r=HalUtils.findAnnotation(bean.getBeanClass(),HalResource.class);
-		if(r!=null) {
+		final HalResource r = HalUtils.findAnnotation(bean.getBeanClass(), HalResource.class);
+		if (r != null) {
 			return r.idRegex();
 		}
 		return HalResource.DEFAULT_ID_REGEX;
 	}
 
 	public static boolean isHalResource(final JavaType javaType) {
-		if(findAnnotation(javaType.getRawClass(),HalResource.class) !=null) {
+		if (findAnnotation(javaType.getRawClass(), HalResource.class) != null) {
 			return true;
 		}
-		final JavaType containedClass=javaType.getContentType();
-		if(containedClass != null && findAnnotation(containedClass.getRawClass(),HalResource.class) != null) {
+		final JavaType containedClass = javaType.getContentType();
+		if (containedClass != null && findAnnotation(containedClass.getRawClass(), HalResource.class) != null) {
 			return true;
 		}
 		return false;
 	}
 
 	public static boolean isHalLink(final BeanPropertyWriter p) {
-		return p.getAnnotation(HalLink.class)!=null;
+		return p.getAnnotation(HalLink.class) != null;
 	}
 
 	public static boolean isHalEmbedded(final BeanPropertyWriter p) {
-		return p.getAnnotation(HalEmbedded.class)!=null;
+		return p.getAnnotation(HalEmbedded.class) != null;
 	}
 
 	public static boolean isHalEmbedded(final SettableBeanProperty p) {
-		return p.getAnnotation(HalEmbedded.class)!=null;
+		return p.getAnnotation(HalEmbedded.class) != null;
 	}
-	private final static Map<Class<?>,Class<?>> primitiveToBoxedClass = new HashMap<Class<?>,Class<?>> ();
+
+	private final static Map<Class<?>, Class<?>> primitiveToBoxedClass = new HashMap<Class<?>, Class<?>>();
+
 	static {
-		primitiveToBoxedClass.put(boolean.class,Boolean.class);
+		primitiveToBoxedClass.put(boolean.class, Boolean.class);
 		primitiveToBoxedClass.put(byte.class, Byte.class);
 		primitiveToBoxedClass.put(short.class, Short.class);
 		primitiveToBoxedClass.put(char.class, Character.class);
@@ -147,43 +154,74 @@ public class HalUtils {
 		primitiveToBoxedClass.put(float.class, Float.class);
 		primitiveToBoxedClass.put(double.class, Double.class);
 	}
-	
-	public static Object valueFromString(final SettableBeanProperty p,String value) throws JsonMappingException {
+
+	public static Object valueFromString(final SettableBeanProperty p, String value) throws JsonMappingException {
 		try {
-			Class<?> c=p.getType().getRawClass();
-			if(primitiveToBoxedClass.containsKey(c)) {
-				c=primitiveToBoxedClass.get(c);
+			Class<?> c = p.getType().getRawClass();
+			if (primitiveToBoxedClass.containsKey(c)) {
+				c = primitiveToBoxedClass.get(c);
 			}
-			
+
 			Constructor<?> constructor = c.getConstructor(String.class);
 			return constructor.newInstance(value);
-		} catch (NoSuchMethodException e){
-			throw new JsonMappingException("Failed to convert id of "+value+" to " +p,e);
-		} catch (SecurityException e){
-			throw new JsonMappingException("Failed to convert id of "+value+" to " +p,e);
-		} catch (InstantiationException e){
-			throw new JsonMappingException("Failed to convert id of "+value+" to " +p,e);
-		} catch (IllegalAccessException e){
-			throw new JsonMappingException("Failed to convert id of "+value+" to " +p,e);
-		} catch (IllegalArgumentException e){
-			throw new JsonMappingException("Failed to convert id of "+value+" to " +p,e);
-		} catch (InvocationTargetException e){
-			throw new JsonMappingException("Failed to convert id of "+value+" to " +p,e);
+		} catch (NoSuchMethodException e) {
+			throw new JsonMappingException("Failed to convert id of " + value + " to " + p, e);
+		} catch (SecurityException e) {
+			throw new JsonMappingException("Failed to convert id of " + value + " to " + p, e);
+		} catch (InstantiationException e) {
+			throw new JsonMappingException("Failed to convert id of " + value + " to " + p, e);
+		} catch (IllegalAccessException e) {
+			throw new JsonMappingException("Failed to convert id of " + value + " to " + p, e);
+		} catch (IllegalArgumentException e) {
+			throw new JsonMappingException("Failed to convert id of " + value + " to " + p, e);
+		} catch (InvocationTargetException e) {
+			throw new JsonMappingException("Failed to convert id of " + value + " to " + p, e);
 		}
 	}
-	
-	public static String extractId(Class<?> c,String href) throws JsonMappingException {
-		HalResource resource=HalUtils.findAnnotation(c, HalResource.class);
+
+	public static String extractId(Class<?> c, String href) throws JsonMappingException {
+		HalResource resource = HalUtils.findAnnotation(c, HalResource.class);
 		Matcher m;
-		if(resource!=null) {
-			m=Pattern.compile(resource.idRegex()).matcher(href);
+		if (resource != null) {
+			m = Pattern.compile(resource.idRegex()).matcher(href);
 		} else {
-			m=Pattern.compile(HalResource.DEFAULT_ID_REGEX).matcher(href);
+			m = Pattern.compile(HalResource.DEFAULT_ID_REGEX).matcher(href);
 		}
-		
-		if(m.matches()) {
+
+		if (m.matches()) {
 			return m.group(1);
 		}
-		throw new JsonMappingException("Could not turn " + href + " into an ID using pattern "+ m.pattern().toString());
+		throw new JsonMappingException("Could not turn " + href + " into an ID using pattern " + m.pattern().toString());
 	}
+
+	public static boolean hasValues(final List<BeanPropertyWriter> properties, final Object obj) {
+		try {
+			for (BeanPropertyWriter beanPropertyWriter : properties) {
+				final Object propertyValue = beanPropertyWriter.get(obj);
+				if (shouldWriteProperty(propertyValue)) {
+					return true;
+				}
+			}
+		} catch (Exception e) {
+			return false;
+		}
+		return false;
+	}
+
+	public static boolean shouldWriteProperty(Object value) {
+		if (value != null){
+
+			if (Collection.class.isAssignableFrom(value.getClass())) {
+				return !((Collection)value).isEmpty();
+			} else if (value.getClass().isArray()) {
+				return ((Object [])value).length > 0;
+			} else if (Map.class.isAssignableFrom(value.getClass())) {
+				return !((Map)value).isEmpty();
+			}else{
+				return true;
+			}
+		}
+		return false;
+	}
+
 }

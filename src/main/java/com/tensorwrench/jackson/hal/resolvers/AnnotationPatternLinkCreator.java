@@ -18,21 +18,32 @@ public class AnnotationPatternLinkCreator implements HalLinkCreator {
     static class LinkBuilderImpl {
         private final BeanDescription beanDescription;
         private final BeanPropertyDefinition idProp;
+        private final BeanPropertyDefinition linkPrefixProp;
         private final String format;
 
         public LinkBuilderImpl(BeanDescription bean) throws JsonMappingException {
             beanDescription = bean;
             format = HalUtils.findFormat(bean);
             idProp = HalUtils.findIdProperty(bean);
+            linkPrefixProp = HalUtils.findLinkPrefixProperty(bean);
             if (idProp != null) {
                 idProp.getAccessor().fixAccess();
+            }
+            if (linkPrefixProp != null) {
+                linkPrefixProp.getAccessor().fixAccess();
             }
         }
 
         public String make(Object object) {
-            if (idProp != null) {
-                Object val = idProp.getAccessor().getValue(object);
-                return format.replace("{id}", val.toString())
+            if (idProp != null && idProp.getAccessor().getValue(object) != null) {
+                Object idValue = idProp.getAccessor().getValue(object);
+
+                if (linkPrefixProp != null && linkPrefixProp.getAccessor().getValue(object) != null) {
+                    Object linkPrefixValue = linkPrefixProp.getAccessor().getValue(object);
+                    return format.replace("{id}", idValue.toString())
+                            .replace("{prefix}", linkPrefixValue.toString());
+                }
+                return format.replace("{id}", idValue.toString())
                         .replace("{classname}", beanDescription.getBeanClass().getSimpleName())
                         .replace("{classname.lcase}", beanDescription.getBeanClass().getSimpleName().toLowerCase());
             }else if (object instanceof String){
