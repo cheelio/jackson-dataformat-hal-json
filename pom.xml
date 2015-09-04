@@ -2,7 +2,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>com.tensorwrench</groupId>
 	<artifactId>jackson-dataformat-hal-json</artifactId>
-	<version>3.0.0-SNAPSHOT</version>
+	<version>3.1.0-SNAPSHOT</version>
 	<packaging>jar</packaging>
 	<scm>
 		<connection>scm:git:https://github.com/cheelio/jackson-dataformat-hal-json.git</connection>
