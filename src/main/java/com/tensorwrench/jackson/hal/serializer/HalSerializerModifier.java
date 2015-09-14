@@ -40,8 +40,13 @@ public class HalSerializerModifier extends BeanSerializerModifier {
             builder.getProperties().remove(p);
         }
 
-        builder.getProperties().add(0, embedded);
-        builder.getProperties().add(0, links);
+        if (embedded.hasProperties()){
+            builder.getProperties().add(0, embedded);
+        }
+
+        if (links.hasProperties()){
+            builder.getProperties().add(0, links);
+        }
 
         return builder;
     }

@@ -1,14 +1,14 @@
 package com.tensorwrench.jackson.hal.serializer;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import com.fasterxml.jackson.databind.introspect.AnnotatedMember;
 import com.fasterxml.jackson.databind.introspect.AnnotatedMethod;
 import com.fasterxml.jackson.databind.introspect.AnnotationMap;
 import com.fasterxml.jackson.databind.ser.BeanPropertyWriter;
 import com.fasterxml.jackson.databind.type.TypeFactory;
 import com.fasterxml.jackson.databind.util.SimpleBeanPropertyDefinition;
+
+import java.util.ArrayList;
+import java.util.List;
 
 class EmptyClass {
 	
@@ -45,8 +45,12 @@ public abstract class BaseHalPropertyWriter extends BeanPropertyWriter{
 
 	public void addProp(BeanPropertyWriter p) {
 		properties.add(p);
-		
 	}
+
+	public boolean hasProperties(){
+		return !properties.isEmpty();
+	}
+
 	public Object dummyMethod() {
 		return null;
 	}
